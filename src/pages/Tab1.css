@@ -1,0 +1,88 @@
+.tab1-content {
+  padding: 0 16px 24px;
+}
+
+.weather-page {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 20px 0;
+}
+
+.weather-header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: #3d3d3d;
+}
+
+.weather-header h2 {
+  margin: 0;
+  font-size: 1.6rem;
+}
+
+.weather-header p {
+  margin: 0;
+  color: #666;
+}
+
+.weather-status {
+  min-height: 180px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: #58656e;
+}
+
+.weather-status--error {
+  color: #b00020;
+}
+
+.weather-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+}
+
+.weather-card {
+  border-radius: 18px;
+  box-shadow: 0 12px 30px rgba(73, 93, 114, 0.1);
+  color: #1f2937;
+}
+
+.weather-card ion-card-header {
+  padding-bottom: 8px;
+}
+
+.weather-card ion-card-title {
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.weather-card ion-card-content {
+  padding: 16px 18px 20px;
+}
+
+.weather-value {
+  font-size: 2.1rem;
+  font-weight: 700;
+}
+
+.weather-card--sunny {
+  background: linear-gradient(145deg, #ffe8d6, #fff5ef);
+}
+
+.weather-card--soft {
+  background: linear-gradient(145deg, #e8f0ff, #f7fbff);
+}
+
+.weather-card--mint {
+  background: linear-gradient(145deg, #e3f7ef, #f6fffb);
+}
+
+.weather-card--peach {
+  background: linear-gradient(145deg, #ffe5f0, #fff5fb);
+}
