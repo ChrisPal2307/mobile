@@ -1,0 +1,12 @@
+ion-header.glass-header {
+  background: rgba(255, 255, 255, 0.7) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: none !important;
+}
+
+ion-page.weather-theme-page,
+.weather-theme-page ion-content {
+  --background: linear-gradient(170deg, #bae6fd 0%, #7dd3fc 45%, #e0f2fe 100%) !important;
+}

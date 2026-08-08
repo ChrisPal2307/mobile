@@ -6,6 +6,12 @@ export interface OpenMeteoCurrentWeather {
   time: string;
 }
 
+export interface OpenMeteoHourlyWeather {
+  time: string[];
+  weather_code?: number[];
+}
+
 export interface OpenMeteoResponse {
   current: OpenMeteoCurrentWeather;
+  hourly: OpenMeteoHourlyWeather;
 }
