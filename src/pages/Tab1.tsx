@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 import {
   IonCard,
   IonCardContent,
@@ -6,13 +5,21 @@ import {
   IonCardTitle,
   IonContent,
   IonHeader,
+  IonIcon,
   IonPage,
+  IonSelect,
+  IonSelectOption,
   IonSpinner,
   IonText,
-  IonTitle,
   IonToolbar,
 } from '@ionic/react';
+import { bodyOutline, locationOutline, navigateOutline, thermometerOutline, waterOutline } from 'ionicons/icons';
+import { useCity } from '../context/CityContext';
+import useFetchData from '../hooks/useFetchData';
+import type { OpenMeteoCurrentWeather } from '../types/DashboardTypes';
 import './Tab1.css';
+
+const CITY_NAMES = ['Guayaquil', 'Quito', 'Manta', 'Cuenca'] as const;
 
 type WeatherState = {
   temperature: number;
@@ -22,116 +29,143 @@ type WeatherState = {
   time: string;
 };
 
-const API_URL =
-  'https://api.open-meteo.com/v1/forecast?latitude=52.52&longitude=13.41&hourly=temperature_2m,relative_humidity_2m,weather_code,apparent_temperature,wind_speed_10m&current=temperature_2m,relative_humidity_2m,apparent_temperature,wind_speed_10m';
+const mapCurrentToWeatherState = (
+  current: OpenMeteoCurrentWeather,
+): WeatherState => ({
+  temperature: current.temperature_2m,
+  apparentTemperature: current.apparent_temperature,
+  windSpeed: current.wind_speed_10m,
+  humidity: current.relative_humidity_2m,
+  time: current.time,
+});
 
 const Tab1: React.FC = () => {
-  const [weather, setWeather] = useState<WeatherState | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { selectedCity, setSelectedCity } = useCity();
+  const { data, loading, error } = useFetchData(selectedCity);
 
-  useEffect(() => {
-    const controller = new AbortController();
-
-    const fetchWeather = async () => {
-      try {
-        const response = await fetch(API_URL, { signal: controller.signal });
-        if (!response.ok) {
-          throw new Error(`Error ${response.status}`);
-        }
-        const data = await response.json();
-        const current = data.current;
-        if (!current) {
-          throw new Error('No se encontraron datos actuales');
-        }
-
-        setWeather({
-          temperature: current.temperature_2m,
-          apparentTemperature: current.apparent_temperature,
-          windSpeed: current.wind_speed_10m,
-          humidity: current.relative_humidity_2m,
-          time: current.time,
-        });
-      } catch (err) {
-        if (err instanceof Error && err.name === 'AbortError') {
-          return;
-        }
-        setError(err instanceof Error ? err.message : 'Error al cargar los datos');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchWeather();
-    return () => controller.abort();
-  }, []);
+  const weather = data ? mapCurrentToWeatherState(data.current) : null;
 
   return (
-    <IonPage>
-      <IonHeader>
-        <IonToolbar>
-          <IonTitle>Clima actual</IonTitle>
+    <IonPage className="weather-theme-page">
+      {/* Header sin bordes nativos ni sombras */}
+      <IonHeader className="glass-header ion-no-border">
+        <IonToolbar className="custom-toolbar">
+          <div slot="start" className="app-title-text">
+            Clima
+          </div>
+
+          <div slot="end" className="header-select-inline">
+            <IonIcon icon={locationOutline} className="header-city-icon" />
+            <IonSelect
+              value={selectedCity}
+              interface="popover"
+              placeholder="Seleccionar"
+              className="header-city-select"
+              onIonChange={(event) => setSelectedCity(event.detail.value)}
+            >
+              {CITY_NAMES.map((city) => (
+                <IonSelectOption key={city} value={city}>
+                  {city}
+                </IonSelectOption>
+              ))}
+            </IonSelect>
+          </div>
         </IonToolbar>
       </IonHeader>
-      <IonContent fullscreen className="tab1-content">
-        <IonHeader collapse="condense">
-          <IonToolbar>
-            <IonTitle size="large">Clima actual</IonTitle>
-          </IonToolbar>
-        </IonHeader>
 
-        <div className="weather-page">
-          <div className="weather-header">
-            <h2>Clima en Berlín</h2>
-            <p>Datos actuales desde Open-Meteo</p>
+      <IonContent fullscreen className="tab1-content">
+        <div className="weather-container">
+
+          {/* Cabecera del Dashboard */}
+          <div className="dashboard-hero">
+            <h1 className="dashboard-title">Dashboard Principal</h1>
           </div>
 
           {loading ? (
-            <div className="weather-status">
-              <IonSpinner name="crescent" />
-              <IonText>Cargando información del clima...</IonText>
+            <div className="weather-status-card">
+              <IonSpinner name="crescent" color="primary" />
+              <IonText className="loading-text">Cargando información del clima...</IonText>
             </div>
           ) : error ? (
-            <div className="weather-status weather-status--error">
+            <div className="weather-status-card weather-status-card--error">
               <IonText>{error}</IonText>
             </div>
           ) : weather ? (
-            <div className="weather-grid">
-              <IonCard className="weather-card weather-card--sunny">
+            /* Lista en 1 sola columna */
+            <div className="weather-single-column">
+
+              {/* Temperatura */}
+              <IonCard className="weather-card glass-card">
                 <IonCardHeader>
-                  <IonCardTitle>Temperatura</IonCardTitle>
+                  <div className="card-header-flex">
+                    <div className="card-title-wrapper">
+                      <IonCardTitle>Temperatura Actual</IonCardTitle>
+                      <span className="card-subtitle">Medición ambiente a 2m</span>
+                    </div>
+                    <div className="icon-badge badge-temp">
+                      <IonIcon icon={thermometerOutline} />
+                    </div>
+                  </div>
                 </IonCardHeader>
                 <IonCardContent>
-                  <div className="weather-value">{weather.temperature.toFixed(1)}°C</div>
+                  <div className="weather-value">{weather.temperature.toFixed(1)}<span>°C</span></div>
                 </IonCardContent>
               </IonCard>
 
-              <IonCard className="weather-card weather-card--soft">
+              {/* Sensación Térmica */}
+              <IonCard className="weather-card glass-card">
                 <IonCardHeader>
-                  <IonCardTitle>Temperatura aparente</IonCardTitle>
+                  <div className="card-header-flex">
+                    <div className="card-title-wrapper">
+                      <IonCardTitle>Sensación Térmica</IonCardTitle>
+                      <span className="card-subtitle">Percepción de temperatura</span>
+                    </div>
+                    <div className="icon-badge badge-sens">
+                      <IonIcon icon={bodyOutline} />
+                    </div>
+                  </div>
                 </IonCardHeader>
                 <IonCardContent>
-                  <div className="weather-value">{weather.apparentTemperature.toFixed(1)}°C</div>
+                  <div className="weather-value">{weather.apparentTemperature.toFixed(1)}<span>°C</span></div>
                 </IonCardContent>
               </IonCard>
 
-              <IonCard className="weather-card weather-card--mint">
+              {/* Velocidad del Viento */}
+              <IonCard className="weather-card glass-card">
                 <IonCardHeader>
-                  <IonCardTitle>Velocidad del viento</IonCardTitle>
+                  <div className="card-header-flex">
+                    <div className="card-title-wrapper">
+                      <IonCardTitle>Velocidad del Viento</IonCardTitle>
+                      <span className="card-subtitle">Viento a 10m de altura</span>
+                    </div>
+                    <div className="icon-badge badge-wind">
+                      <IonIcon icon={navigateOutline} />
+                    </div>
+                  </div>
                 </IonCardHeader>
                 <IonCardContent>
-                  <div className="weather-value">{weather.windSpeed.toFixed(1)} km/h</div>
+                  <div className="weather-value">{weather.windSpeed.toFixed(1)} <span className="unit">km/h</span></div>
                 </IonCardContent>
               </IonCard>
 
-              <IonCard className="weather-card weather-card--peach">
+              {/* Humedad */}
+              <IonCard className="weather-card glass-card">
                 <IonCardHeader>
-                  <IonCardTitle>Humedad relativa</IonCardTitle>
+                  <div className="card-header-flex">
+                    <div className="card-title-wrapper">
+                      <IonCardTitle>Humedad Relativa</IonCardTitle>
+                      <span className="card-subtitle">Porcentaje de agua en aire</span>
+                    </div>
+                    <div className="icon-badge badge-humidity">
+                      <IonIcon icon={waterOutline} />
+                    </div>
+                  </div>
                 </IonCardHeader>
                 <IonCardContent>
-                  <div className="weather-value">{weather.humidity}%</div>
+                  <div className="weather-value">{weather.humidity}<span>%</span></div>
                 </IonCardContent>
               </IonCard>
+
             </div>
           ) : null}
         </div>
