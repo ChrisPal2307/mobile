@@ -159,5 +159,4 @@ export default function WeatherCalendarUI({ time, weatherCode }: WeatherCalendar
   </div>
 );
 
-
 }
